@@ -25,6 +25,29 @@ UsenetStreamer is a Stremio addon that bridges Prowlarr and NZBDav. It hosts no 
    node server.js
    ```
 
+### Docker Usage
+
+Build the container locally and run it with your environment variables. All configuration is provided via the same vars documented below.
+
+```bash
+docker build -t usenetstreamer .
+
+docker run -d \
+   --name usenetstreamer \
+   -p 7000:7000 \
+   -e PROWLARR_URL=https://your-prowlarr-host:9696 \
+   -e PROWLARR_API_KEY=your-prowlarr-api-key \
+   -e NZBDAV_URL=http://localhost:3000 \
+   -e NZBDAV_API_KEY=your-nzbdav-api-key \
+   -e NZBDAV_WEBDAV_URL=http://localhost:3000 \
+   -e NZBDAV_WEBDAV_USER=webdav-username \
+   -e NZBDAV_WEBDAV_PASS=webdav-password \
+   -e ADDON_BASE_URL=https://myusenet.duckdns.org \
+   usenetstreamer
+```
+
+You can also supply a file with `--env-file /path/to/env` if you prefer not to pass each variable individually.
+
 
 ## Environment Variables
 
