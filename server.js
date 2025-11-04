@@ -18,6 +18,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 // Configure Prowlarr
 const PROWLARR_URL = (process.env.PROWLARR_URL || '').trim();
 const PROWLARR_API_KEY = (process.env.PROWLARR_API_KEY || '').trim();
+const PROWLARR_STRICT_ID_MATCH = (process.env.PROWLARR_STRICT_ID_MATCH || 'false').toLowerCase() === 'true';
 
 // Configure NZBDav
 const ADDON_BASE_URL = (process.env.ADDON_BASE_URL || '').trim();
@@ -38,7 +39,7 @@ const NZBDAV_API_TIMEOUT_MS = 80000;
 const NZBDAV_HISTORY_TIMEOUT_MS = 60000;
 const NZBDAV_STREAM_TIMEOUT_MS = 240000;
 const FAILURE_VIDEO_FILENAME = 'failure_video.mp4';
-const FAILURE_VIDEO_PATH = path.resolve(__dirname, FAILURE_VIDEO_FILENAME);
+const FAILURE_VIDEO_PATH = path.resolve(__dirname, 'assets', FAILURE_VIDEO_FILENAME);
 const STREAM_HIGH_WATER_MARK = (() => {
   const parsed = Number(process.env.STREAM_HIGH_WATER_MARK);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1024 * 1024;
@@ -967,12 +968,18 @@ app.get('/stream/:type/:id.json', async (req, res) => {
     } else if (type === 'series' && Number.isFinite(seasonNum) && Number.isFinite(episodeNum)) {
       textQueryParts.push(`S${String(seasonNum).padStart(2, '0')}E${String(episodeNum).padStart(2, '0')}`);
     }
-    const textQueryFallback = (textQueryParts.join(' ').trim() || primaryId).trim();
-    const addedTextPlan = addPlan('search', { rawQuery: textQueryFallback });
-    if (addedTextPlan) {
-      console.log('[PROWLARR] Added text search plan', { query: textQueryFallback });
+
+    // Only add text-based search if strict ID matching is disabled
+    if (!PROWLARR_STRICT_ID_MATCH) {
+      const textQueryFallback = (textQueryParts.join(' ').trim() || primaryId).trim();
+      const addedTextPlan = addPlan('search', { rawQuery: textQueryFallback });
+      if (addedTextPlan) {
+        console.log('[PROWLARR] Added text search plan', { query: textQueryFallback });
+      } else {
+        console.log('[PROWLARR] Text search plan already present', { query: textQueryFallback });
+      }
     } else {
-      console.log('[PROWLARR] Text search plan already present', { query: textQueryFallback });
+      console.log('[PROWLARR] Strict ID matching enabled; skipping text-based search');
     }
 
     const baseSearchParams = {
