@@ -8,6 +8,13 @@ const { pipeline } = require('stream');
 const { promisify } = require('util');
 // webdav is an ES module; we'll import it lazily when first needed
 const path = require('path');
+let NNTPClientCtor = null;
+try {
+  const nntpModule = require('nntp/lib/nntp');
+  NNTPClientCtor = typeof nntpModule === 'function' ? nntpModule : nntpModule?.NNTP || null;
+} catch (error) {
+  NNTPClientCtor = null;
+}
 const runtimeEnv = require('./config/runtimeEnv');
 const { triageAndRank } = require('./nzbTriageRunner');
 
@@ -38,6 +45,158 @@ function scheduleRestart() {
     console.log('[ADMIN] Restarting service to apply configuration changes...');
     process.exit(0);
   }, 300);
+}
+
+function sanitizeBaseUrl(input) {
+  if (!input) return '';
+  return String(input).trim().replace(/\/+$/, '');
+}
+
+function parseBoolean(value) {
+  if (typeof value === 'boolean') return value;
+  if (value === null || value === undefined) return false;
+  const normalized = String(value).trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+}
+
+async function testIndexerConnection(values) {
+  const managerType = String(values?.INDEXER_MANAGER || 'prowlarr').trim().toLowerCase() || 'prowlarr';
+  const baseUrl = sanitizeBaseUrl(values?.INDEXER_MANAGER_URL);
+  if (!baseUrl) throw new Error('Indexer URL is required');
+  const apiKey = (values?.INDEXER_MANAGER_API_KEY || '').trim();
+  const timeout = 8000;
+
+  if (managerType === 'prowlarr') {
+    if (!apiKey) throw new Error('API key is required for Prowlarr');
+    const response = await axios.get(`${baseUrl}/api/v1/system/status`, {
+      headers: { 'X-Api-Key': apiKey },
+      timeout,
+      validateStatus: () => true,
+    });
+    if (response.status === 200) {
+      const version = response.data?.version || response.data?.appVersion || 'unknown';
+      return `Connected to Prowlarr (${version})`;
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('Unauthorized: check Prowlarr API key');
+    }
+    throw new Error(`Unexpected response ${response.status} from Prowlarr`);
+  }
+
+  const params = {};
+  if (apiKey) params.apikey = apiKey;
+  const response = await axios.get(`${baseUrl}/api/stats`, {
+    params,
+    timeout,
+    validateStatus: () => true,
+  });
+  if (response.status === 200) {
+    const version = response.data?.appVersion || response.data?.version || response.data?.nzbhydra2Version;
+    return `Connected to NZBHydra${version ? ` (${version})` : ''}`;
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('Unauthorized: check NZBHydra API key');
+  }
+  throw new Error(`Unexpected response ${response.status} from NZBHydra`);
+}
+
+async function testNzbdavConnection(values) {
+  const baseUrl = sanitizeBaseUrl(values?.NZBDAV_URL || values?.NZBDAV_WEBDAV_URL);
+  if (!baseUrl) throw new Error('NZBDav URL is required');
+  const apiKey = (values?.NZBDAV_API_KEY || '').trim();
+  if (!apiKey) throw new Error('NZBDav API key is required');
+  const headers = { 'x-api-key': apiKey };
+  const timeout = 8000;
+  const endpoints = ['/status', '/system/info', '/api/status'];
+  let lastIssue = null;
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await axios.get(`${baseUrl}${endpoint}`, {
+        headers,
+        timeout,
+        validateStatus: () => true,
+      });
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Unauthorized: check NZBDav API key');
+      }
+      if (response.status >= 400) {
+        lastIssue = new Error(`${endpoint} returned status ${response.status}`);
+        continue;
+      }
+      const version = response.data?.version || response.data?.appVersion || response.data?.nzbdavVersion;
+      return `Connected to NZBDav${version ? ` (${version})` : ''}`;
+    } catch (error) {
+      lastIssue = error;
+    }
+  }
+
+  throw lastIssue || new Error('Unable to reach NZBDav');
+}
+
+async function testUsenetConnection(values) {
+  if (!NNTPClientCtor) throw new Error('NNTP client library unavailable on server');
+  const host = (values?.NZB_TRIAGE_NNTP_HOST || '').trim();
+  if (!host) throw new Error('Usenet provider host is required');
+  const portValue = Number(values?.NZB_TRIAGE_NNTP_PORT);
+  const port = Number.isFinite(portValue) && portValue > 0 ? portValue : 119;
+  const useTLS = parseBoolean(values?.NZB_TRIAGE_NNTP_TLS);
+  const user = (values?.NZB_TRIAGE_NNTP_USER || '').trim();
+  const pass = (values?.NZB_TRIAGE_NNTP_PASS || '').trim();
+  const timeoutMs = 8000;
+
+  return new Promise((resolve, reject) => {
+    const client = new NNTPClientCtor();
+    let settled = false;
+
+    const finalize = (err, message) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try {
+        client.quit(() => client.end());
+      } catch (_) {
+        try { client.end(); } catch (__) { /* noop */ }
+      }
+      if (err) reject(err);
+      else resolve(message);
+    };
+
+    const timer = setTimeout(() => {
+      finalize(new Error('Connection timed out'));
+    }, timeoutMs);
+
+    client.once('ready', () => {
+      client.date((err) => {
+        if (err) {
+          finalize(new Error(`DATE command failed: ${err.message || err}`));
+          return;
+        }
+        finalize(null, 'Connected to Usenet provider successfully');
+      });
+    });
+
+    client.once('error', (err) => {
+      finalize(new Error(err?.message || 'NNTP error'));
+    });
+
+    client.once('close', () => {
+      if (!settled) finalize(new Error('Connection closed before verification'));
+    });
+
+    try {
+      client.connect({
+        host,
+        port,
+        secure: useTLS,
+        user: user || undefined,
+        password: pass || undefined,
+        connTimeout: timeoutMs,
+      });
+    } catch (error) {
+      finalize(error);
+    }
+  });
 }
 
 adminApiRouter.post('/config', (req, res) => {
@@ -73,6 +232,37 @@ adminApiRouter.post('/config', (req, res) => {
 
   res.json({ success: true, manifestUrl: computeManifestUrl(), restarting: true });
   scheduleRestart();
+});
+
+adminApiRouter.post('/test-connections', async (req, res) => {
+  const payload = req.body || {};
+  const { type, values } = payload;
+  if (!type || typeof values !== 'object') {
+    res.status(400).json({ error: 'Invalid payload: expected "type" and "values"' });
+    return;
+  }
+
+  try {
+    let message;
+    switch (type) {
+      case 'indexer':
+        message = await testIndexerConnection(values);
+        break;
+      case 'nzbdav':
+        message = await testNzbdavConnection(values);
+        break;
+      case 'usenet':
+        message = await testUsenetConnection(values);
+        break;
+      default:
+        res.status(400).json({ error: `Unknown test type: ${type}` });
+        return;
+    }
+    res.json({ status: 'ok', message });
+  } catch (error) {
+    const reason = error?.message || 'Connection test failed';
+    res.json({ status: 'error', message: reason });
+  }
 });
 
 function extractTokenFromRequest(req) {

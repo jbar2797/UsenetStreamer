@@ -87,6 +87,40 @@
     return payload;
   }
 
+  function setTestStatus(type, message, isError) {
+    const el = configForm.querySelector(`[data-test-status="${type}"]`);
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('error', Boolean(message && isError));
+    el.classList.toggle('success', Boolean(message && !isError));
+  }
+
+  async function runConnectionTest(button) {
+    const type = button?.dataset?.test;
+    if (!type) return;
+    const originalText = button.textContent;
+    setTestStatus(type, '', false);
+    button.disabled = true;
+    button.textContent = 'Testing...';
+    try {
+      const values = collectFormValues();
+      const result = await apiRequest('/admin/api/test-connections', {
+        method: 'POST',
+        body: JSON.stringify({ type, values }),
+      });
+      if (result?.status === 'ok') {
+        setTestStatus(type, result.message || 'Connection succeeded.', false);
+      } else {
+        setTestStatus(type, result?.message || 'Connection failed.', true);
+      }
+    } catch (error) {
+      setTestStatus(type, error.message || 'Request failed.', true);
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
   async function apiRequest(path, options = {}) {
     const token = getToken();
     if (!token) throw new Error('Addon token is required');
@@ -180,6 +214,11 @@
   });
 
   configForm.addEventListener('submit', saveConfiguration);
+
+  const testButtons = configForm.querySelectorAll('button[data-test]');
+  testButtons.forEach((button) => {
+    button.addEventListener('click', () => runConnectionTest(button));
+  });
 
   const pathToken = extractTokenFromPath();
   if (pathToken) {

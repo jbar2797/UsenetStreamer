@@ -56,6 +56,10 @@
               <span class="field-hint">Faster ID-only searches; indexers that rely on text queries will be skipped.</span>
             </label>
           </div>
+          <div class="inline-actions">
+            <button type="button" class="secondary" data-test="indexer">Test Connection</button>
+            <span class="status-message" data-test-status="indexer"></span>
+          </div>
         </section>
 
         <section class="group">
@@ -85,6 +89,10 @@
             <label>Series Category
               <input name="NZBDAV_CATEGORY_SERIES" type="text" placeholder="Tv" />
             </label>
+          </div>
+          <div class="inline-actions">
+            <button type="button" class="secondary" data-test="nzbdav">Test Connection</button>
+            <span class="status-message" data-test-status="nzbdav"></span>
           </div>
         </section>
 
@@ -125,6 +133,10 @@
             <label>Max Usenet Connections
               <input name="NZB_TRIAGE_MAX_CONNECTIONS" type="number" min="1" step="1" />
             </label>
+          </div>
+          <div class="inline-actions">
+            <button type="button" class="secondary" data-test="usenet">Test Connection</button>
+            <span class="status-message" data-test-status="usenet"></span>
           </div>
         </section>
 

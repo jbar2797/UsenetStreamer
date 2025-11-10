@@ -116,12 +116,36 @@ select:focus {
   box-shadow: 0 12px 24px rgba(0, 123, 255, 0.28);
 }
 
+.secondary {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid rgba(94, 114, 130, 0.6);
+  border-radius: 8px;
+  color: #e0e7ef;
+  font-weight: 600;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.secondary:hover {
+  border-color: #40c4ff;
+  color: #40c4ff;
+}
+
 .error {
   color: #ff6b6b;
 }
 
 .hidden {
   display: none !important;
+}
+
+.inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
 }
 
 .manifest-row {
@@ -195,6 +219,14 @@ select:focus {
   min-height: 1.5rem;
   display: inline-flex;
   align-items: center;
+}
+
+.status-message.success {
+  color: #6fde8d;
+}
+
+.status-message.error {
+  color: #ff6b6b;
 }
 
 .support-note {
