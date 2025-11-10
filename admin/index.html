@@ -88,26 +88,26 @@
         </section>
 
         <section class="group">
-          <h3>NNTP &amp; Triage</h3>
+          <h3>NZB Health Check</h3>
           <div class="field-grid">
             <label class="checkbox">
               <input name="NZB_TRIAGE_ENABLED" type="checkbox" />
-              <span>Enable NNTP Health Checks</span>
+              <span>Enable NZB Health Checks</span>
             </label>
-            <label>NNTP Host
+            <label>Health Check Host
               <input name="NZB_TRIAGE_NNTP_HOST" type="text" placeholder="news.easynews.com" />
             </label>
-            <label>NNTP Port
+            <label>Health Check Port
               <input name="NZB_TRIAGE_NNTP_PORT" type="number" min="1" placeholder="563" />
             </label>
             <label class="checkbox">
               <input name="NZB_TRIAGE_NNTP_TLS" type="checkbox" />
               <span>Use TLS</span>
             </label>
-            <label>NNTP Username
+            <label>Health Check Username
               <input name="NZB_TRIAGE_NNTP_USER" type="text" autocomplete="off" />
             </label>
-            <label>NNTP Password
+            <label>Health Check Password
               <input name="NZB_TRIAGE_NNTP_PASS" type="password" autocomplete="new-password" />
             </label>
             <label>Preferred Size (GB)
@@ -121,7 +121,7 @@
               </select>
               <span class="field-hint">Pick 2 for the fastest responses, 4 or 6 to probe more candidates.</span>
             </label>
-            <label>Max NNTP Connections
+            <label>Max Health Check Connections
               <input name="NZB_TRIAGE_MAX_CONNECTIONS" type="number" min="1" step="1" />
             </label>
           </div>
