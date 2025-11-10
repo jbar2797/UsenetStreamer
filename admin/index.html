@@ -53,6 +53,7 @@
             <label class="checkbox">
               <input name="INDEXER_MANAGER_STRICT_ID_MATCH" type="checkbox" />
               <span>Strict ID Matching Only</span>
+              <span class="field-hint">Faster ID-only searches; indexers that rely on text queries will be skipped.</span>
             </label>
           </div>
         </section>
@@ -94,20 +95,20 @@
               <input name="NZB_TRIAGE_ENABLED" type="checkbox" />
               <span>Enable NZB Health Checks</span>
             </label>
-            <label>Health Check Host
+            <label>Usenet Provider Host
               <input name="NZB_TRIAGE_NNTP_HOST" type="text" placeholder="news.easynews.com" />
             </label>
-            <label>Health Check Port
+            <label>Usenet Provider Port
               <input name="NZB_TRIAGE_NNTP_PORT" type="number" min="1" placeholder="563" />
             </label>
             <label class="checkbox">
               <input name="NZB_TRIAGE_NNTP_TLS" type="checkbox" />
               <span>Use TLS</span>
             </label>
-            <label>Health Check Username
+            <label>Usenet Provider Username
               <input name="NZB_TRIAGE_NNTP_USER" type="text" autocomplete="off" />
             </label>
-            <label>Health Check Password
+            <label>Usenet Provider Password
               <input name="NZB_TRIAGE_NNTP_PASS" type="password" autocomplete="new-password" />
             </label>
             <label>Preferred Size (GB)
@@ -121,7 +122,7 @@
               </select>
               <span class="field-hint">Pick 2 for the fastest responses, 4 or 6 to probe more candidates.</span>
             </label>
-            <label>Max Health Check Connections
+            <label>Max Usenet Connections
               <input name="NZB_TRIAGE_MAX_CONNECTIONS" type="number" min="1" step="1" />
             </label>
           </div>

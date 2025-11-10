@@ -129,9 +129,7 @@
       updateManifestLink(data.manifestUrl || '');
       runtimeEnvPath = data.runtimeEnvPath || null;
       const baseMessage = 'Add this manifest to Stremio once HTTPS is set.';
-      manifestDescription.textContent = runtimeEnvPath
-        ? `${baseMessage} Runtime overrides are stored at ${runtimeEnvPath}.`
-        : baseMessage;
+      manifestDescription.textContent = baseMessage;
     } catch (error) {
       authError.textContent = error.message;
       authError.classList.remove('hidden');

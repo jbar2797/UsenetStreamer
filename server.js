@@ -1799,7 +1799,7 @@ async function streamHandler(req, res) {
     }
     let cinemetaMeta = null;
 
-    const needsCinemeta = !incomingTvdbId && !isSpecialRequest && (
+    const needsCinemeta = !INDEXER_MANAGER_STRICT_ID_MATCH && !incomingTvdbId && !isSpecialRequest && (
       (!hasTitleInQuery) ||
       (type === 'series' && !hasTvdbInQuery) ||
       (type === 'movie' && !hasTmdbInQuery)
