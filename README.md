@@ -111,6 +111,16 @@ Stremio requires HTTPS. Place Nginx/Caddy/Traefik in front of the addon, termina
 
 ---
 
+## 🍼 Beginner-Friendly End-to-End Setup
+
+Prefer a hand-held walkthrough? Read [`docs/beginners-guide.md`](docs/beginners-guide.md) for a soup-to-nuts tutorial that covers:
+
+- Picking a Usenet provider + indexer, spinning up a VPS, and installing Docker.
+- Deploying Prowlarr, NZBDav, and UsenetStreamer with a single `docker compose` file.
+- Opening firewall ports, wiring DuckDNS, and configuring Caddy for HTTPS the beginner way.
+
+Refer to that guide whenever you need a step-by-step checklist; the rest of this README focuses on day-to-day usage details.
+
 ## 🛠️ Admin Dashboard
 
 Visit `https://your-addon-domain/<token>/admin/` to:
