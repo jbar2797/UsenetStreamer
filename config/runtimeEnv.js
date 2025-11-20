@@ -1,7 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONFIG_DIR = path.join(__dirname);
+// Allow overriding the configuration directory at runtime via ENV.
+// If CONFIG_DIR is set (and not empty), we resolve it relative to CWD; otherwise we fall back to this module's directory.
+// This lets downstream forks relocate runtime-env.json without patching upstream paths.
+const CONFIG_DIR = (() => {
+  const override = process.env.CONFIG_DIR;
+  if (override && override.trim() !== '') {
+    // Use path.resolve to normalize; if override is relative it becomes absolute from current working directory.
+    return path.resolve(override.trim());
+  }
+  return path.join(__dirname);
+})();
 const RUNTIME_ENV_FILE = path.join(CONFIG_DIR, 'runtime-env.json');
 let cachedEnv = null;
 

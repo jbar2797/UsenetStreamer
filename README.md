@@ -138,6 +138,22 @@ The dashboard is protected by the same shared secret as the manifest. Rotate it 
 
 The dashboard writes to `config/runtime-env.json`, but the addon still respects traditional env vars for automation or container platforms. Key settings include:
 
+### Relocating `runtime-env.json`
+
+If you need to keep configuration outside the project tree (e.g. bind-mounting a host folder in Docker, using a central config path for multiple forks), set the environment variable `CONFIG_DIR` before starting the process:
+
+```bash
+CONFIG_DIR=/data/usenetstreamer-config node server.js
+```
+
+Rules:
+- If `CONFIG_DIR` is set and non-empty, it is resolved with `path.resolve()` (relative paths become absolute from the current working directory).
+- The file `runtime-env.json` will then live at: `$CONFIG_DIR/runtime-env.json`.
+- The directory is auto-created if missing.
+- Leaving `CONFIG_DIR` unset falls back to the bundled default `config/` directory next to the code.
+
+This allows forks or containerized deployments to update upstream code without losing local runtime settings.
+
 - `INDEXER_MANAGER` (default `prowlarr`) — set `nzbhydra` for Hydra.
 - `INDEXER_MANAGER_URL`, `INDEXER_MANAGER_API_KEY`, `INDEXER_MANAGER_INDEXERS`, `INDEXER_MANAGER_STRICT_ID_MATCH`.
 - `ADDON_BASE_URL` (must be HTTPS), `ADDON_SHARED_SECRET` (required for security).
