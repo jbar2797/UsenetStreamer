@@ -29,6 +29,14 @@
 
 ---
 
+> **Disclaimer:** UsenetStreamer is not affiliated with any Usenet provider or indexer, does not host or distribute media, and is offered strictly for educational purposes.
+
+## ☕ Support Development
+
+**[Buy Me A Coffee &rarr;](https://buymeacoffee.com/gaikwadsank)** — every cup keeps the addon maintained, hosted, and packed with new features.
+
+---
+
 ## ✨ Feature Highlights
 
 ### 🚀 Performance & Caching
@@ -206,9 +214,3 @@ Anything that can load HTTPS manifests and handle `externalPlayer` hints should 
 - **Issues & PRs:** [GitHub tracker](https://github.com/Sanket9225/UsenetStreamer/issues)
 
 Huge thanks to everyone testing, filing bugs, and sharing feature ideas.
-
----
-
-<p align="center">
-  <strong>Ready?</strong> Add <code>https://your-domain/super-secret-token/manifest.json</code> to Stremio and start streaming from your own Usenet stack.
-</p>
