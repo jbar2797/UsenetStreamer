@@ -1524,13 +1524,7 @@ async function streamHandler(req, res) {
                 indexerId: item.indexerId || 'easynews',
               };
               finalNzbResults.push(enriched);
-              triageDecisions.set(enriched.downloadUrl, {
-                status: 'verified',
-                source: 'easynews',
-                verifiedAt: Date.now(),
-              });
             });
-            triageTitleMap = buildTriageTitleMap(triageDecisions);
           }
         } catch (easynewsError) {
           console.warn('[EASYNEWS] Search failed', easynewsError.message);

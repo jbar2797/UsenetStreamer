@@ -23,7 +23,7 @@
 - **Docker image:** `ghcr.io/sanket9225/usenetstreamer:latest`
 - **Admin dashboard:** `https://your-addon-domain/<token>/admin/`
 - **Manifest template:** `https://your-addon-domain/<token>/manifest.json`
-- **Discord:** [Community chat](https://discord.gg/NJsprZyz)
+- **Discord:** [Community chat](https://discord.gg/cu9bzk9h)
 - **Support:** [Buy me a coffee](https://buymeacoffee.com/gaikwadsank)
 - **Self-hosting guide:** [Jump to instructions](#-deployment)
 
